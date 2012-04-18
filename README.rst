@@ -1,5 +1,5 @@
 ==============================================
-Hashrot - A SHA612 Based Double-Caesar Cipher
+Hashrot - A SHA512 Based Double-Caesar Cipher
 ==============================================
 
 Summary
