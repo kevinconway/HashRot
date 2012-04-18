@@ -38,10 +38,12 @@ Road Map
 4. Add option for multiple passes. (Wait until you see my double ROT13!)
 
 5. Large scale tests. (Handled "War and Peace" just fine, but I want something
-meatier...)
+    meatier...)
 
 License
 =======
 
-The HashRot code is released under the GPLv3. The attached SHA2 implementation was
-released under a BSD style license by Olivier Gay <olivier.gay@a3.epfl.ch>.
+The HashRot code is released under the GPLv3. 
+
+The attached SHA2 implementation was released under a BSD style license by
+Olivier Gay <olivier.gay@a3.epfl.ch>.
