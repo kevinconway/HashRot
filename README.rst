@@ -29,15 +29,11 @@ other way around.
 Road Map
 =======
 
-    1. Implement enforcement of required command line options.
-
-    2. Implement a printable help menu.
-
-    3. Add more comments in `forward` and `backward` functions.
-
-    4. Add option for multiple passes. (Wait until you see my double ROT13!)
-
-    5. Large scale tests. (Handled "War and Peace" just fine, but I want something
+1. Implement enforcement of required command line options.
+2. Implement a printable help menu.
+3. Add more comments in `forward` and `backward` functions.
+4. Add option for multiple passes. (Wait until you see my double ROT13!)
+5. Large scale tests. (Handled "War and Peace" just fine, but I want something
     meatier...)
 
 License
