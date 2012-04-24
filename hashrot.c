@@ -115,15 +115,28 @@ void forward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* o
 
         // Iterate through bytes and apply modulus addition using the
         // same byte in the SHA hash.
+        // Just to be clear, 255 + 1 == 0 using the modulus addition.
         int position = 0;
         while (position < 64) {
             buffer[position] = (buffer[position] + hash[position]) % 256;
             position = position + 1;
         }
 
-        // Iterate through bytes and swap with the byte in
-        // the position that matches the value of the hash
-        // at the given index.
+        // This section performs the spatial rotation of each byte in reference
+        // to the key. The rotation is based on the value of the current
+        // position in the hash. The blocks are 64 bytes in length so the value
+        // of the current position in the hash must be mod 64 to keep the
+        // rotation within the bounds of the block. As a small scale
+        // illustration, take a block of length 5 with a key of length 5 using
+        // a base 5 number system:
+        //
+        // Hash to use for encryption:  [*3*, 4, 3, 2, 1]
+        // Block to be encrypted:       [*2*, 3, 0, *1*, 4]
+        // After first rotation:        [*1*, 3, 0, *2*, 4]
+        //
+        // The byte at offset 0 was swapped with the byte at offset 3. The idea
+        // here being that each byte in the sequence is swapped with the byte
+        // that has a matching offset to the same byte in the encryption key.
         position = 0;
         while (position < 64) {
             unsigned char temp = buffer[hash[position] % 64];
@@ -132,16 +145,25 @@ void forward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* o
             position = position + 1;
         }
 
-        // Write to file and reroll a new hash
+        // Write the newly encrypted block to the output file and generate a new
+        // hash to use as the key. The first hash used by the encryption is a
+        // direct SHA512 of the password given. The following hashes are SHA512s
+        // of the hash that came before. This way each block is encrypted using
+        // a different key, but all keys can be generated from the initial
+        // password input.
         fwrite(buffer, 1, 64, ofile);
         sha512(hash, 64, hash);
         current_chunk = current_chunk + 1;
     }
 
+    // Since not all files are sized to multiples of 64, this section deals with
+    // any remaining bytes that don't fill an entire block.
     if (left_overs > 0) {
 
         fread(buffer, 1, left_overs, infile);
 
+        // The same modulus addition is performed. No change from previous
+        // section.
         int position = 0;
         while (position < left_overs) {
 
@@ -149,6 +171,10 @@ void forward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* o
             position = position + 1;
         }
 
+        // This section makes one minor change from the regular block. It uses
+        // the length of the final byte string in the modulus for the spatial
+        // rotation. This ensures that the bytes we want are not placed outside
+        // the contents of the file.
         position = 0;
         while (position < left_overs) {
             unsigned char temp = buffer[hash[position] % left_overs];
@@ -174,6 +200,9 @@ void backward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* 
 
         fread(buffer, 1, 64, infile);
 
+        // This section works identically to the matching section in the forward
+        // section but does so in reverse order. This section starts at the end
+        // of the byte string and undoes the spatial rotation.
         int position = 63;
         while (position >= 0) {
             unsigned char temp = buffer[hash[position] % 64];
@@ -182,6 +211,10 @@ void backward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* 
             position = position - 1;
         }
 
+        // This section reverses the modulus addition performed in the forward
+        // counterpart. Technically, the encryption could backward and the
+        // decryption be forward. One undoes the other. It's just a matter of
+        // preference.
         position = 0;
         while (position < 64) {
             buffer[position] = (buffer[position] - hash[position]) % 256;
