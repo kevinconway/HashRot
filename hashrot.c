@@ -26,12 +26,12 @@ void print_help();
 
 int main(int argc, char *argv[]) {
 
-    unsigned char* password;
-    char* infile_name;
-    FILE* infile;
-    FILE* ofile;
+    unsigned char* password = NULL;
+    char* infile_name = NULL;
+    FILE* infile = NULL;
+    FILE* ofile = NULL;
     unsigned long file_size;
-    char* ofile_name;
+    char* ofile_name = NULL;
     unsigned char hash[64];
     bool forwerd = true;
 
@@ -62,6 +62,21 @@ int main(int argc, char *argv[]) {
         }
         
         x = x + 1;
+    }
+
+    if (password == NULL) {
+        puts("Error: No password defined for encryption.");
+        return -1;
+    }
+
+    if (infile_name == NULL) {
+        puts("Error: No input file defined.");
+        return -1;
+    }
+
+    if (ofile_name == NULL) {
+        puts("Error: No output file defined.");
+        return -1;
     }
 
     infile = fopen(infile_name, "rb");
