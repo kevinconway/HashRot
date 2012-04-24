@@ -23,7 +23,7 @@
 void forward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* ofile);
 void backward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* ofile);
 
-void main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 
     unsigned char* password;
     char* infile_name;
@@ -71,13 +71,13 @@ void main(int argc, char *argv[]) {
         forward(hash, infile, file_size, ofile);
         fclose(infile);
         fclose(ofile);
-        return;
+        return 0;
     }
 
     backward(hash, infile, file_size, ofile);
     fclose(infile);
     fclose(ofile);
-    return;
+    return 0;
 }
 
 void forward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* ofile) {
