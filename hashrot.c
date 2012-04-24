@@ -22,6 +22,7 @@
 
 void forward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* ofile);
 void backward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* ofile);
+void print_help();
 
 int main(int argc, char *argv[]) {
 
@@ -53,6 +54,11 @@ int main(int argc, char *argv[]) {
         if (strcmp(argv[x], "-o") == 0) {
             x = x + 1;
             ofile_name = argv[x];
+        }
+
+        if (strcmp(argv[x], "-h") == 0 || strcmp(argv[x], "--help") == 0) {
+            print_help();
+            return 0;
         }
         
         x = x + 1;
@@ -193,5 +199,22 @@ void backward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* 
         fwrite(buffer, 1, left_overs, ofile);
     }
     
+    return;
+}
+
+void print_help() {
+
+    puts("HashRot Help:");
+    puts("");
+    puts("-p or --password:         The password used to encrypt the file.");
+    puts("-i or --input:            The file to encrypt.");
+    puts("-p or --output:           Name to use for the new encrypted file.");
+    puts("-b or --backward:         Toggle to run the algorithm backwards.");
+    puts("-b or --help:             Display this output.");
+    puts("");
+    puts("Example:");
+    puts("hashrot -p mysecretpassword -i plain.txt -o encrypted.txt");
+    puts("hashrot -p mysecretpassword -i encrypted.txt -i decrypted.txt -b");
+
     return;
 }
