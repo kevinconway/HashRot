@@ -37,21 +37,22 @@ int main(int argc, char *argv[]) {
 
     int x = 0;
     while(x < argc) {
-        if (strcmp(argv[x], "-b") == 0) {
+
+        if (strcmp(argv[x], "-b") == 0 || strcmp(argv[x], "--backward") == 0) {
             forwerd = false;
         }
 
-        if (strcmp(argv[x], "-p") == 0) {
+        if (strcmp(argv[x], "-p") == 0 || strcmp(argv[x], "--password") == 0) {
             x = x + 1;
             password = argv[x];
         }
         
-        if (strcmp(argv[x], "-i") == 0) {
+        if (strcmp(argv[x], "-i") == 0 || strcmp(argv[x], "--input") == 0) {
             x = x + 1;
             infile_name = argv[x];
         }
 
-        if (strcmp(argv[x], "-o") == 0) {
+        if (strcmp(argv[x], "-o") == 0 ||strcmp(argv[x], "--output") == 0) {
             x = x + 1;
             ofile_name = argv[x];
         }
