@@ -257,7 +257,7 @@ void print_help() {
     puts("");
     puts("-p or --password:         The password used to encrypt the file.");
     puts("-i or --input:            The file to encrypt.");
-    puts("-p or --output:           Name to use for the new encrypted file.");
+    puts("-o or --output:           Name to use for the new encrypted file.");
     puts("-b or --backward:         Toggle to run the algorithm backwards.");
     puts("-b or --help:             Display this output.");
     puts("");

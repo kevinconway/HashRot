@@ -21,7 +21,7 @@ The command line options are detailed in the help menu outputted by the CLI::
     
     -p or --password:         The password used to encrypt the file.
     -i or --input:            The file to encrypt.
-    -p or --output:           Name to use for the new encrypted file.
+    -o or --output:           Name to use for the new encrypted file.
     -b or --backward:         Toggle to run the algorithm backwards.
     -b or --help:             Display this output.
 
