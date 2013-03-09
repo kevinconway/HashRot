@@ -35,6 +35,10 @@ For other versions of this code base check out the other branches.
 
     A version that uses pthreads and POSIX file operations.
 
+-   threaded_win
+
+    A version that uses Windows threads and file operations.
+
 Usage
 =====
 
