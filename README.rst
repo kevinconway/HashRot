@@ -31,7 +31,7 @@ For other versions of this code base check out the other branches.
 
     The original, serial version of the code.
 
--   **thread**
+-   **threaded**
 
     A version that uses pthreads and POSIX file operations.
 
