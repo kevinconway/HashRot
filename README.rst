@@ -1,16 +1,39 @@
 ==============================================
-Hashrot - A SHA512 Based Double-Caesar Cipher
+HashRot - A SHA512 Based Double-Caesar Cipher
 ==============================================
 
 Summary
 =======
 
-This is a project I used to teach myself a little C++ a few years back that I
-decided to port to C. When I originally wrote this, I didn't know it was 
-called a Double-Caesar cipher, it just seemed like a fun way to pick up
-the file API and get some time in working with bytes instead of strings all
-the time. I don't expect that anyone will find this terribly useful, but it
-was actually fun to make.
+HashRot is a block based "encryption" algorithm that uses two forms of rotation
+to obfuscate information. One rotation is "vertical" where each byte of the
+block is added, with modulus, to the corresponding byte of the key. The second
+rotation is "horizontal" where each byte of the block is swapped with another
+byte in the block based on the corresponding byte in the key.
+
+The encryption has two flavours, a "left" shift and a "right" shift, that modify
+the source file based on the given key. Each version will undo the other.
+
+In practical terms, I use this project as a way to practice and maintain my
+familiarity with C programming. I return to this project from time to time in
+order to try new techniques and new ideas. I would not suggest using this
+program to secure truly confidential information.
+
+This version of the program is single threaded and makes use of standard C
+libraries.
+
+Branches
+========
+
+For other versions of this code base check out the other branches.
+
+-   **master**
+
+    The original, serial version of the code.
+
+-   thread
+
+    A version that uses pthreads and POSIX file operations.
 
 Usage
 =====
@@ -18,48 +41,21 @@ Usage
 The command line options are detailed in the help menu outputted by the CLI::
 
     HashRot Help:
-    
+
     -p or --password:         The password used to encrypt the file.
     -i or --input:            The file to encrypt.
     -o or --output:           Name to use for the new encrypted file.
-    -b or --backward:         Toggle to run the algorithm backwards.
-    -b or --help:             Display this output.
+    -r or --reverse:          Run the encryption in reverse.
+    -h or --help:             Display this output.
 
     Example:
     hashrot -p mysecretpassword -i plain.txt -o encrypted.txt
-    hashrot -p mysecretpassword -i encrypted.txt -i decrypted.txt -b
-
-The script should now check for missing parameters and notify with a message.
-
-Road Map
-=======
-
-1. Implement enforcement of required command line options.
-    
-    Check.
-
-2. Implement a printable help menu.
-
-    Check.
-
-3. Add more comments in `forward` and `backward` functions.
-
-    Check.
-
-4. Add option for multiple passes. (Wait until you see my double ROT13!)
-
-5. Large scale tests. (Handled "War and Peace" just fine, but I want something
-   meatier...)
-
-   Ran the Ubuntu ISO through. Something like 600 megs so not that big. Runs
-   alright.
-
-6. Python wrappers
+    hashrot -p mysecretpassword -i encrypted.txt -i decrypted.txt -r
 
 License
 =======
 
-The HashRot code is released under the GPLv3. 
+The HashRot code is released under the GPLv3.
 
 The attached SHA2 implementation was released under a BSD style license by
 Olivier Gay <olivier.gay@a3.epfl.ch>.
