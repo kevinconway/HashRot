@@ -19,8 +19,8 @@ familiarity with C programming. I return to this project from time to time in
 order to try new techniques and new ideas. I would not suggest using this
 program to secure truly confidential information.
 
-This version of the program is multi-threaded (<pthreads.h>) and makes use of
-POSIX bindings in C for file IO operations.
+This version of the program is multi-threaded and makes use of Windows bindings
+in C for file IO operations.
 
 Branches
 ========
@@ -31,9 +31,13 @@ For other versions of this code base check out the other branches.
 
     The original, serial version of the code.
 
--   **threaded**
+-   threaded
 
     A version that uses pthreads and POSIX file operations.
+
+-   **threaded_win**
+
+    A version that uses Windows threads and file operations.
 
 Usage
 =====
