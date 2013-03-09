@@ -19,35 +19,41 @@
 #ifndef HASHROT_KEY
 #define HASHROT_KEY
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include "sha2/sha2.h"
+#include <Windows.h>
 #include <stdio.h>
+#include "sha2.h"
 
-void hash_from_keyfile(char* keyfile_name, unsigned char* hash) {
+void hash_from_keyfile(wchar_t* keyfile_name, unsigned char* hash) {
 
-    int key = open(keyfile_name, O_RDONLY);
+    HANDLE key = CreateFile(    keyfile_name,
+                                GENERIC_READ,
+                                FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                NULL,
+                                OPEN_ALWAYS,
+                                FILE_ATTRIBUTE_NORMAL,
+                                NULL
+                            );
+
     unsigned char buffer[64];
-    register short bytes = 0;
+    unsigned long bytes = 0;
     sha512_ctx ctx;
 
     sha512_init(&ctx);
 
-    bytes = read(key, buffer, 64);
+    ReadFile(key, buffer, 64, &bytes, NULL);
 
     while (bytes > 0) {
 
         sha512_update(&ctx, buffer, bytes);
 
-        bytes = read(key, buffer, 64);
+        ReadFile(key, buffer, 64, &bytes, NULL);
 
     }
 
     sha512_final(&ctx, hash);
 
-    close(key);
+    CloseHandle(key);
 
 }
+
 #endif
