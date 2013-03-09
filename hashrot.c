@@ -18,10 +18,9 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
-#include <pthread.h>
+#include <Windows.h>
 #include <time.h>
-#include "sha2/sha2.h"
+#include "sha2.h"
 #include "help.c"
 #include "param.c"
 #include "right.c"
@@ -29,19 +28,17 @@
 
 int main(int argc, char *argv[]) {
 
-    register int argument = 0, thread = 0;
+    register int argument = 0, buffer_size = 0, thread = 0, reveresed = 0;
 
     clock_t runtime;
 
-    pthread_t* thread_handles = NULL;
-
-    void* (*encrypt)(void*) = &right;
+    HANDLE* thread_handles = NULL;
 
     Configuration* config = (Configuration*) malloc(sizeof(Configuration));
     ThreadParameters* params = NULL;
 
-    FILE* input = NULL;
-    FILE* output = NULL;
+    HANDLE input = NULL;
+    HANDLE output = NULL;
 
     if (argc < 4) {
 
@@ -71,7 +68,7 @@ int main(int argc, char *argv[]) {
         if (    strcmp(argv[argument], "-r") == 0 ||
                 strcmp(argv[argument], "--reverse") == 0   ) {
 
-            encrypt = &left;
+            reveresed = 1;
 
         }
 
@@ -81,8 +78,8 @@ int main(int argc, char *argv[]) {
             argument = argument + 1;
 
             config->threads = atoi(argv[argument]);
-            thread_handles = (pthread_t*) malloc(
-                                    sizeof(pthread_t) * (config->threads - 1)
+            thread_handles = (HANDLE*) malloc(
+                                    sizeof(HANDLE) * (config->threads - 1)
                                 );
 
         }
@@ -101,7 +98,12 @@ int main(int argc, char *argv[]) {
 
             argument = argument + 1;
 
-            config->key_file_name = argv[argument];
+            buffer_size = MultiByteToWideChar(CP_ACP, NULL, argv[argument], -1, NULL, 0);
+
+            config->key_file_name = (wchar_t*) malloc(sizeof(wchar_t) * buffer_size);
+
+            MultiByteToWideChar(CP_ACP, NULL, argv[argument], -1, config->key_file_name, buffer_size);
+
             config->key_from_file = 1;
 
         }
@@ -111,7 +113,11 @@ int main(int argc, char *argv[]) {
 
             argument = argument + 1;
 
-            config->input_file_name = argv[argument];
+            buffer_size = MultiByteToWideChar(CP_ACP, NULL, argv[argument], -1, NULL, 0);
+
+            config->input_file_name = (wchar_t*) malloc(sizeof(wchar_t) * buffer_size);
+
+            MultiByteToWideChar(CP_ACP, NULL, argv[argument], -1, config->input_file_name, buffer_size);
 
         }
 
@@ -120,7 +126,11 @@ int main(int argc, char *argv[]) {
 
             argument = argument + 1;
 
-            config->output_file_name = argv[argument];
+            buffer_size = MultiByteToWideChar(CP_ACP, NULL, argv[argument], -1, NULL, 0);
+
+            config->output_file_name = (wchar_t*) malloc(sizeof(wchar_t) * buffer_size);
+
+            MultiByteToWideChar(CP_ACP, NULL, argv[argument], -1, config->output_file_name, buffer_size);
 
         }
 
@@ -149,29 +159,37 @@ int main(int argc, char *argv[]) {
 
     }
 
-    input = fopen(config->input_file_name, "rb");
+    input = CreateFile(     config->input_file_name,
+                            GENERIC_READ,
+                            FILE_SHARE_READ | FILE_SHARE_WRITE,
+                            NULL,
+                            OPEN_ALWAYS,
+                            FILE_ATTRIBUTE_NORMAL,
+                            NULL
+                        );
     if (input == NULL) {
 
         puts("Error: Could not open input file.");
         return -1;
 
     }
-    fclose(input);
+    CloseHandle(input);
 
-    output = fopen(config->output_file_name, "rb+");
+    output = CreateFile(    config->output_file_name,
+                            GENERIC_READ,
+                            FILE_SHARE_READ | FILE_SHARE_WRITE,
+                            NULL,
+                            OPEN_ALWAYS,
+                            FILE_ATTRIBUTE_NORMAL,
+                            NULL
+                        );
     if (output == NULL) {
 
-        output = fopen(config->output_file_name, "wb");
-
-        if (output == NULL) {
-
-            puts("Error: Could not open output file.");
-            return -1;
-
-        }
+        puts("Error: Could not open output file.");
+        return -1;
 
     }
-    fclose(output);
+    CloseHandle(output);
 
     runtime = clock();
 
@@ -181,11 +199,14 @@ int main(int argc, char *argv[]) {
         params->thread_id = thread;
         params->config = config;
 
-        pthread_create( &thread_handles[thread - 1],
-                        NULL,
-                        encrypt,
-                        (void*) params
-                    );
+        thread_handles[thread - 1] = CreateThread(  NULL,
+                                                    0,
+                                                    reveresed == 0 ?
+                                                        right : left,
+                                                    (void*) params,
+                                                    0,
+                                                    NULL
+                                                );
 
     }
 
@@ -193,7 +214,15 @@ int main(int argc, char *argv[]) {
     params->thread_id = 0;
     params->config = config;
 
-    encrypt((void*) params);
+    if (reveresed == 0) {
+
+        right((void*) params);
+
+    } else {
+
+        left((void*) params);
+
+    }
 
     runtime = clock() - runtime;
 
