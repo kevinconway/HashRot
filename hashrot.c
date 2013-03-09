@@ -20,8 +20,8 @@
 #include <stdio.h>
 #include "sha2/sha2.h"
 
-void forward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* ofile);
-void backward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* ofile);
+void right(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* ofile);
+void left(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* ofile);
 void print_help();
 
 int main(int argc, char *argv[]) {
@@ -33,20 +33,20 @@ int main(int argc, char *argv[]) {
     unsigned long file_size;
     char* ofile_name = NULL;
     unsigned char hash[64];
-    bool forwerd = true;
+    bool reverse = false;
 
     int x = 0;
     while(x < argc) {
 
-        if (strcmp(argv[x], "-b") == 0 || strcmp(argv[x], "--backward") == 0) {
-            forwerd = false;
+        if (strcmp(argv[x], "-r") == 0 || strcmp(argv[x], "--reverse") == 0) {
+            reverse = true;
         }
 
         if (strcmp(argv[x], "-p") == 0 || strcmp(argv[x], "--password") == 0) {
             x = x + 1;
             password = argv[x];
         }
-        
+
         if (strcmp(argv[x], "-i") == 0 || strcmp(argv[x], "--input") == 0) {
             x = x + 1;
             infile_name = argv[x];
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
             print_help();
             return 0;
         }
-        
+
         x = x + 1;
     }
 
@@ -89,20 +89,20 @@ int main(int argc, char *argv[]) {
 
     sha512(password, (unsigned) strlen(password), hash);
 
-    if(forwerd == true) {
-        forward(hash, infile, file_size, ofile);
+    if(reverse == false) {
+        right(hash, infile, file_size, ofile);
         fclose(infile);
         fclose(ofile);
         return 0;
     }
 
-    backward(hash, infile, file_size, ofile);
+    left(hash, infile, file_size, ofile);
     fclose(infile);
     fclose(ofile);
     return 0;
 }
 
-void forward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* ofile) {
+void right(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* ofile) {
 
     unsigned char buffer[64];
     unsigned int chunks = file_size / 64;
@@ -185,11 +185,11 @@ void forward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* o
 
         fwrite(buffer, 1, left_overs, ofile);
     }
-    
+
     return;
 }
 
-void backward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* ofile) {
+void left(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* ofile) {
 
     unsigned char buffer[64];
     unsigned int chunks = file_size / 64;
@@ -200,7 +200,7 @@ void backward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* 
 
         fread(buffer, 1, 64, infile);
 
-        // This section works identically to the matching section in the forward
+        // This section works identically to the matching section in the right
         // section but does so in reverse order. This section starts at the end
         // of the byte string and undoes the spatial rotation.
         int position = 63;
@@ -211,9 +211,9 @@ void backward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* 
             position = position - 1;
         }
 
-        // This section reverses the modulus addition performed in the forward
-        // counterpart. Technically, the encryption could backward and the
-        // decryption be forward. One undoes the other. It's just a matter of
+        // This section reverses the modulus addition performed in the right
+        // counterpart. Technically, the encryption could left and the
+        // decryption be right. One undoes the other. It's just a matter of
         // preference.
         position = 0;
         while (position < 64) {
@@ -237,7 +237,7 @@ void backward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* 
             buffer[position] = temp;
             position = position - 1;
         }
-        
+
         position = 0;
         while (position < left_overs) {
 
@@ -247,7 +247,7 @@ void backward(unsigned char* hash, FILE* infile, unsigned long file_size, FILE* 
 
         fwrite(buffer, 1, left_overs, ofile);
     }
-    
+
     return;
 }
 
@@ -258,8 +258,8 @@ void print_help() {
     puts("-p or --password:         The password used to encrypt the file.");
     puts("-i or --input:            The file to encrypt.");
     puts("-o or --output:           Name to use for the new encrypted file.");
-    puts("-b or --backward:         Toggle to run the algorithm backwards.");
-    puts("-b or --help:             Display this output.");
+    puts("-r or --reverse:          Toggle to run the algorithm in reverse.");
+    puts("-h or --help:             Display this output.");
     puts("");
     puts("Example:");
     puts("hashrot -p mysecretpassword -i plain.txt -o encrypted.txt");
