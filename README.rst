@@ -43,6 +43,7 @@ The command line options are detailed in the help menu outputted by the CLI::
     HashRot Help:
 
     -p or --password:         The password used to encrypt the file.
+    -k or --keyfile:          The file to use as the encryption key.
     -i or --input:            The file to encrypt.
     -o or --output:           Name to use for the new encrypted file.
     -r or --reverse:          Run the encryption in reverse.
@@ -50,7 +51,7 @@ The command line options are detailed in the help menu outputted by the CLI::
 
     Example:
     hashrot -p mysecretpassword -i plain.txt -o encrypted.txt
-    hashrot -p mysecretpassword -i encrypted.txt -i decrypted.txt -r
+    hashrot -k ./keyfile.txt -i encrypted.txt -i decrypted.txt -r
 
 License
 =======
