@@ -16,6 +16,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef HASHROT_PRINT_HELP
+#define HASHROT_PRINT_HELP
+
 #include <stdio.h>
 
 void print_help() {
@@ -36,3 +39,5 @@ void print_help() {
 
     return;
 }
+
+#endif
