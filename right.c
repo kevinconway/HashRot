@@ -16,36 +16,50 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef HASHROT_RIGHT
+#define HASHROT_RIGHT
+
 #include <stdio.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <Windows.h>
 #include "param.c"
 #include "key.c"
-#include "sha2/sha2.h"
+#include "sha2.h"
 
-void* right (void* config) {
+DWORD WINAPI right (LPVOID config) {
 
     ThreadParameters* params = (ThreadParameters*) config;
 
     unsigned char buffer[64], hash[64];
     register unsigned char temp;
     register unsigned int file_size, chunks, current_chunk, hash_count;
-    register short byte, bytes_read;
+    register short byte;
+    unsigned long bytes_read, bytes_written;
 
-    int input = open(params->config->input_file_name, O_RDWR);
-    struct stat input_stat;
-    fstat(input, &input_stat);
-    int output = open(params->config->output_file_name, O_RDWR);
+    HANDLE input = CreateFile(  params->config->input_file_name,
+                                GENERIC_READ,
+                                FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                NULL,
+                                OPEN_ALWAYS,
+                                FILE_ATTRIBUTE_NORMAL,
+                                NULL
+                            );
 
-    if (output < 0) {
+    HANDLE output = CreateFile( params->config->output_file_name,
+                                GENERIC_READ | GENERIC_WRITE,
+                                FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                NULL,
+                                OPEN_ALWAYS,
+                                FILE_ATTRIBUTE_NORMAL,
+                                NULL
+                            );
+
+    if (output == NULL) {
         puts("Could not open output file.");
-        return NULL;
+        return -1;
     }
 
-    file_size = input_stat.st_size;
+    file_size = GetFileSize(input, NULL);
 
     chunks = file_size / 64;
     current_chunk = params->thread_id;
@@ -73,10 +87,10 @@ void* right (void* config) {
 
     for (current_chunk = params->thread_id; current_chunk <= chunks; current_chunk = current_chunk + params->config->threads) {
 
-        lseek(input, current_chunk * 64, SEEK_SET);
-        lseek(output, current_chunk * 64, SEEK_SET);
+        SetFilePointer(input, current_chunk * 64, NULL, FILE_BEGIN);
+        SetFilePointer(output, current_chunk * 64, NULL, FILE_BEGIN);
 
-        bytes_read = read(input, buffer, 64);
+        ReadFile(input, buffer, 64, &bytes_read, NULL);
 
         for (byte = 0; byte < bytes_read; byte = byte + 1) {
 
@@ -94,7 +108,7 @@ void* right (void* config) {
 
         if (bytes_read > 0) {
 
-            write(output, buffer, bytes_read);
+            WriteFile(output, buffer, bytes_read, &bytes_written, NULL);
 
         }
 
@@ -106,9 +120,11 @@ void* right (void* config) {
 
     }
 
-    close(input);
-    close(output);
+    CloseHandle(input);
+    CloseHandle(output);
 
-    return NULL;
+    return 0;
 
 };
+
+#endif
