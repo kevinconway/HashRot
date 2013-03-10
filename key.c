@@ -24,19 +24,18 @@
 void hash_from_keyfile(char* keyfile_name, unsigned char* hash) {
 
     int key = open(keyfile_name, O_RDONLY);
-    unsigned char buffer[64];
+    unsigned char buffer[BUFFER_SIZE];
     register short bytes = 0;
     sha512_ctx ctx;
 
     sha512_init(&ctx);
 
-    bytes = read(key, buffer, 64);
-
+    bytes = read(key, buffer, BUFFER_SIZE);
     while (bytes > 0) {
 
         sha512_update(&ctx, buffer, bytes);
 
-        bytes = read(key, buffer, 64);
+        bytes = read(key, buffer, BUFFER_SIZE);
 
     }
 
@@ -45,4 +44,5 @@ void hash_from_keyfile(char* keyfile_name, unsigned char* hash) {
     close(key);
 
 }
+
 #endif

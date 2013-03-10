@@ -24,14 +24,13 @@ void* left(void* config) {
 
     ThreadParameters* params = (ThreadParameters*) config;
 
-    unsigned char buffer[64], hash[64];
+    unsigned char buffer[BUFFER_SIZE], hash[64];
+    unsigned char* buffer_partition;
     register unsigned char temp;
-    register unsigned int file_size, chunks, current_chunk, hash_count;
-    register short byte, bytes_read;
+    register unsigned int block, byte_block, hash_count, bytes_read;
+    register short byte, partition_bytes;
 
     int input = open(params->config->input_file_name, O_RDWR);
-    struct stat input_stat;
-    fstat(input, &input_stat);
     int output = open(params->config->output_file_name, O_RDWR);
 
     if (output < 0) {
@@ -39,49 +38,44 @@ void* left(void* config) {
         return NULL;
     }
 
-    file_size = input_stat.st_size;
+    memcpy(hash, params->config->initial_key, 64);
 
-    chunks = file_size / 64;
-    current_chunk = params->thread_id;
+    for (   hash_count = 0;
+            hash_count < params->thread_id * (BUFFER_SIZE / 64);
+            hash_count = hash_count + 1) {
 
-    if (params->config->key_from_file == 1) {
-
-        hash_from_keyfile(  params->config->key_file_name,
-                            hash
-                        );
-
-    } else {
-
-        sha512(params->config->password, (unsigned) strlen((char*) params->config->password), hash);
-
-    }
-
-    hash_count = 0;
-    while (hash_count < current_chunk) {
-
-        sha512(hash, 64, hash);
-
-        hash_count = hash_count + 1;
-    }
-
-    for (current_chunk = params->thread_id; current_chunk <= chunks; current_chunk = current_chunk + params->config->threads) {
-
-        lseek(input, current_chunk * 64, SEEK_SET);
-        lseek(output, current_chunk * 64, SEEK_SET);
-
-        bytes_read = read(input, buffer, 64);
-
-        for (byte = bytes_read - 1; byte >= 0; byte = byte - 1) {
-
-            temp = buffer[hash[byte] % bytes_read];
-            buffer[hash[byte] % bytes_read] = buffer[byte];
-            buffer[byte] = temp;
+            sha512(hash, 64, hash);
 
         }
 
-        for (byte = 0; byte < bytes_read; byte = byte + 1) {
+    block = params->thread_id;
+    do {
 
-            buffer[byte] = (buffer[byte] - hash[byte]) % 256;
+        lseek(input, block * BUFFER_SIZE, SEEK_SET);
+        lseek(output, block * BUFFER_SIZE, SEEK_SET);
+
+        bytes_read = read(input, buffer, BUFFER_SIZE);
+
+        for (byte_block = 0; byte_block < (bytes_read / 64) + 1; byte_block = byte_block + 1) {
+
+            buffer_partition = &buffer[byte_block * 64];
+            partition_bytes = byte_block < bytes_read / 64 ?
+                                64 :
+                                bytes_read % 64;
+
+            for (byte = partition_bytes - 1; byte >= 0; byte = byte - 1) {
+
+                temp = buffer_partition[hash[byte] % partition_bytes];
+                buffer_partition[hash[byte] % partition_bytes] = buffer_partition[byte];
+                buffer_partition[byte] = temp;
+
+            }
+
+            for (byte = 0; byte < partition_bytes; byte = byte + 1) {
+
+                buffer_partition[byte] = (buffer_partition[byte] - hash[byte]) % 256;
+
+            }
 
         }
 
@@ -91,13 +85,18 @@ void* left(void* config) {
 
         }
 
-        for (hash_count = 0; hash_count < params->config->threads; hash_count = hash_count + 1) {
+        for (   hash_count = 0;
+                hash_count < params->config->threads * (BUFFER_SIZE / 64);
+                hash_count = hash_count + 1) {
 
             sha512(hash, 64, hash);
 
         }
 
-    }
+
+        block = block + params->config->threads;
+
+    } while (bytes_read > 0);
 
     close(input);
     close(output);
