@@ -20,7 +20,7 @@
 
 int main(int argc, char *argv[]) {
 
-    register int argument = 0, thread = 0;
+    register int argument = 0, thread = 0, key = 0;
 
     clock_t runtime;
 
@@ -40,13 +40,9 @@ int main(int argc, char *argv[]) {
 
     }
 
-    config->key_from_file = 0;
     config->threads = 1;
-    config->password = NULL;
     config->input_file_name = NULL;
     config->output_file_name = NULL;
-    config->key_file_name = NULL;
-    config->initial_key = NULL;
 
     while (argument < argc) {
 
@@ -82,7 +78,8 @@ int main(int argc, char *argv[]) {
 
             argument = argument + 1;
 
-            config->password = (unsigned char*)argv[argument];
+            sha512((unsigned char*) argv[argument], (unsigned) strlen(argv[argument]), config->initial_key);
+            key = 1;
 
         }
 
@@ -91,8 +88,8 @@ int main(int argc, char *argv[]) {
 
             argument = argument + 1;
 
-            config->key_file_name = argv[argument];
-            config->key_from_file = 1;
+            hash_from_keyfile(argv[argument], config->initial_key);
+            key = 1;
 
         }
 
@@ -118,7 +115,7 @@ int main(int argc, char *argv[]) {
 
     }
 
-    if (config->key_from_file == 0 && config->password == NULL) {
+    if (key == 0) {
 
         puts("Error: No password given.");
         return -1;
