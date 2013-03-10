@@ -15,6 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef HASHROT_RIGHT
+#define HASHROT_RIGHT
 
 #include "imports.c"
 
@@ -104,3 +106,5 @@ void* right (void* config) {
     return NULL;
 
 };
+
+#endif
