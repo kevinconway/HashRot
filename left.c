@@ -20,7 +20,7 @@
 
 #include "imports.c"
 
-void* left (void* config) {
+void* left(void* config) {
 
     ThreadParameters* params = (ThreadParameters*) config;
 
