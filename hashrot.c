@@ -31,8 +31,7 @@ int main(int argc, char *argv[]) {
     Configuration* config = (Configuration*) malloc(sizeof(Configuration));
     ThreadParameters* params = NULL;
 
-    FILE* input = NULL;
-    FILE* output = NULL;
+    int input, output;
 
     if (argc < 4) {
 
@@ -140,29 +139,25 @@ int main(int argc, char *argv[]) {
 
     }
 
-    input = fopen(config->input_file_name, "rb");
-    if (input == NULL) {
+    input = open(config->input_file_name, O_RDWR);
+    if (input < 0) {
 
         puts("Error: Could not open input file.");
         return -1;
 
     }
-    fclose(input);
+    close(input);
 
-    output = fopen(config->output_file_name, "rb+");
-    if (output == NULL) {
+    output = open(  config->output_file_name,
+                    O_RDWR | O_CREAT,
+                    S_IRWXU | S_IRWXG | S_IRWXO);
+    if (output < 0) {
 
-        output = fopen(config->output_file_name, "wb");
-
-        if (output == NULL) {
-
-            puts("Error: Could not open output file.");
-            return -1;
-
-        }
+        puts("Error: Could not open output file.");
+        return -1;
 
     }
-    fclose(output);
+    close(output);
 
     runtime = clock();
 
