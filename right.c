@@ -24,7 +24,8 @@ void* right(void* config) {
 
     ThreadParameters* params = (ThreadParameters*) config;
 
-    unsigned char buffer[BUFFER_SIZE], hash[64];
+    unsigned char hash[64];
+    unsigned char* buffer = malloc(sizeof(unsigned char) * BUFFER_SIZE);
     unsigned char* buffer_partition;
     register unsigned char temp;
     register unsigned int block, byte_block, hash_count, bytes_read;

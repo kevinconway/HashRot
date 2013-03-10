@@ -24,7 +24,7 @@
 void hash_from_keyfile(char* keyfile_name, unsigned char* hash) {
 
     int key = open(keyfile_name, O_RDONLY);
-    unsigned char buffer[BUFFER_SIZE];
+    unsigned char* buffer = malloc(sizeof(unsigned char) * BUFFER_SIZE);
     register short bytes = 0;
     sha512_ctx ctx;
 
