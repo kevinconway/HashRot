@@ -16,33 +16,27 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef HASHROT_KEY
-#define HASHROT_KEY
+#ifndef HASHROT_IMPORTS
+#define HASHROT_IMPORTS
 
-#include "imports.c"
+// C Standard Libs
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
 
-void hash_from_keyfile(char* keyfile_name, unsigned char* hash) {
+// POSIX Libs
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <pthread.h>
 
-    int key = open(keyfile_name, O_RDONLY);
-    unsigned char buffer[64];
-    register short bytes = 0;
-    sha512_ctx ctx;
+// HashRot Libs
+#include "sha2/sha2.h"
+#include "param.c"
+#include "key.c"
+#include "help.c"
+#include "right.c"
+#include "left.c"
 
-    sha512_init(&ctx);
-
-    bytes = read(key, buffer, 64);
-
-    while (bytes > 0) {
-
-        sha512_update(&ctx, buffer, bytes);
-
-        bytes = read(key, buffer, 64);
-
-    }
-
-    sha512_final(&ctx, hash);
-
-    close(key);
-
-}
 #endif

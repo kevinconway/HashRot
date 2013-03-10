@@ -16,15 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include "param.c"
-#include "key.c"
-#include "sha2/sha2.h"
+#include "imports.c"
 
 void* left (void* config) {
 
