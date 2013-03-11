@@ -23,15 +23,12 @@
 
 typedef struct Configuration {
 
-    short key_from_file;
-
     int threads;
 
-    unsigned char* password;
     wchar_t* input_file_name;
     wchar_t* output_file_name;
-    wchar_t* key_file_name;
-    char* initial_key;
+
+    unsigned char initial_key[64];
 
 } Configuration;
 

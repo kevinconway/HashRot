@@ -28,7 +28,7 @@
 
 int main(int argc, char *argv[]) {
 
-    register int argument = 0, buffer_size = 0, thread = 0, reveresed = 0;
+    register int argument = 0, string_size = 0, thread = 0, key = 0;
 
     clock_t runtime;
 
@@ -36,6 +36,8 @@ int main(int argc, char *argv[]) {
 
     Configuration* config = (Configuration*) malloc(sizeof(Configuration));
     ThreadParameters* params = NULL;
+
+    wchar_t* key_file_name = NULL;
 
     HANDLE input = NULL;
     HANDLE output = NULL;
@@ -47,13 +49,9 @@ int main(int argc, char *argv[]) {
 
     }
 
-    config->key_from_file = 0;
     config->threads = 1;
-    config->password = NULL;
     config->input_file_name = NULL;
     config->output_file_name = NULL;
-    config->key_file_name = NULL;
-    config->initial_key = NULL;
 
     while (argument < argc) {
 
@@ -89,7 +87,8 @@ int main(int argc, char *argv[]) {
 
             argument = argument + 1;
 
-            config->password = (unsigned char*)argv[argument];
+            sha512((unsigned char*) argv[argument], (unsigned) strlen(argv[argument]), config->initial_key);
+            key = 1;
 
         }
 
@@ -98,13 +97,14 @@ int main(int argc, char *argv[]) {
 
             argument = argument + 1;
 
-            buffer_size = MultiByteToWideChar(CP_ACP, NULL, argv[argument], -1, NULL, 0);
+            string_size = MultiByteToWideChar(CP_ACP, NULL, argv[argument], -1, NULL, 0);
 
-            config->key_file_name = (wchar_t*) malloc(sizeof(wchar_t) * buffer_size);
+            key_file_name = (wchar_t*) malloc(sizeof(wchar_t) * string_size);
 
-            MultiByteToWideChar(CP_ACP, NULL, argv[argument], -1, config->key_file_name, buffer_size);
+            MultiByteToWideChar(CP_ACP, NULL, argv[argument], -1, key_file_name, string_size);
 
-            config->key_from_file = 1;
+            hash_from_keyfile(key_file_name, config->initial_key);
+            key = 1;
 
         }
 
@@ -138,9 +138,9 @@ int main(int argc, char *argv[]) {
 
     }
 
-    if (config->key_from_file == 0 && config->password == NULL) {
+    if (key == 0) {
 
-        puts("Error: No password given.");
+        puts("Error: No password or keyfile given.");
         return -1;
 
     }
