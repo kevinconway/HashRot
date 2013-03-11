@@ -19,12 +19,7 @@
 #ifndef HASHROT_RIGHT
 #define HASHROT_RIGHT
 
-#include <stdio.h>
-#include <string.h>
-#include <Windows.h>
-#include "param.c"
-#include "key.c"
-#include "sha2.h"
+#include "imports.c"
 
 DWORD WINAPI right (LPVOID config) {
 

@@ -19,12 +19,7 @@
 #ifndef HASHROT_LEFT
 #define HASHROT_LEFT
 
-#include <stdio.h>
-#include <string.h>
-#include <Windows.h>
-#include "param.c"
-#include "key.c"
-#include "sha2.h"
+#include "imports.c"
 
 DWORD WINAPI left (LPVOID config) {
 
