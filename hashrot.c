@@ -16,15 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
-#include <string.h>
-#include <Windows.h>
-#include <time.h>
-#include "sha2.h"
-#include "help.c"
-#include "param.c"
-#include "right.c"
-#include "left.c"
+#include "imports.c"
 
 int main(int argc, char *argv[]) {
 
