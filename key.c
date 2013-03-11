@@ -20,7 +20,6 @@
 #define HASHROT_KEY
 
 #include <Windows.h>
-#include <stdio.h>
 #include "sha2.h"
 
 void hash_from_keyfile(wchar_t* keyfile_name, unsigned char* hash) {
@@ -34,19 +33,19 @@ void hash_from_keyfile(wchar_t* keyfile_name, unsigned char* hash) {
                                 NULL
                             );
 
-    unsigned char buffer[64];
-    unsigned long bytes = 0;
+    unsigned char* buffer = (unsigned char*)malloc(sizeof(unsigned char) * BUFFER_SIZE);
+    unsigned long bytes_read = 0;
     sha512_ctx ctx;
 
     sha512_init(&ctx);
 
-    ReadFile(key, buffer, 64, &bytes, NULL);
+    ReadFile(key, buffer, BUFFER_SIZE, &bytes_read, NULL);
 
-    while (bytes > 0) {
+    while (bytes_read > 0) {
 
-        sha512_update(&ctx, buffer, bytes);
+        sha512_update(&ctx, buffer, bytes_read);
 
-        ReadFile(key, buffer, 64, &bytes, NULL);
+        ReadFile(key, buffer, BUFFER_SIZE, &bytes_read, NULL);
 
     }
 

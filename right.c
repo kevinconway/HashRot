@@ -21,15 +21,17 @@
 
 #include "imports.c"
 
-DWORD WINAPI right (LPVOID config) {
+DWORD WINAPI right(LPVOID config) {
 
     ThreadParameters* params = (ThreadParameters*) config;
 
-    unsigned char buffer[64], hash[64];
+    unsigned char hash[64];
+    unsigned char* buffer = (unsigned char*)malloc(sizeof(unsigned char) * BUFFER_SIZE);
+    unsigned char* buffer_partition;
     register unsigned char temp;
-    register unsigned int file_size, chunks, current_chunk, hash_count;
-    register short byte;
+    register unsigned long block, byte_block, hash_count;
     unsigned long bytes_read, bytes_written;
+    register short byte, partition_bytes;
 
     HANDLE input = CreateFile(  params->config->input_file_name,
                                 GENERIC_READ,
@@ -54,50 +56,44 @@ DWORD WINAPI right (LPVOID config) {
         return -1;
     }
 
-    file_size = GetFileSize(input, NULL);
+    memcpy(hash, params->config->initial_key, 64);
 
-    chunks = file_size / 64;
-    current_chunk = params->thread_id;
+    for (   hash_count = 0;
+            hash_count < params->thread_id * (BUFFER_SIZE / 64);
+            hash_count = hash_count + 1) {
 
-
-    if (params->config->key_from_file == 1) {
-
-        hash_from_keyfile(  params->config->key_file_name,
-                            hash
-                        );
-
-    } else {
-
-        sha512(params->config->password, (unsigned) strlen((char*) params->config->password), hash);
-
-    }
-
-    hash_count = 0;
-    while (hash_count < current_chunk) {
-
-        sha512(hash, 64, hash);
-
-        hash_count = hash_count + 1;
-    }
-
-    for (current_chunk = params->thread_id; current_chunk <= chunks; current_chunk = current_chunk + params->config->threads) {
-
-        SetFilePointer(input, current_chunk * 64, NULL, FILE_BEGIN);
-        SetFilePointer(output, current_chunk * 64, NULL, FILE_BEGIN);
-
-        ReadFile(input, buffer, 64, &bytes_read, NULL);
-
-        for (byte = 0; byte < bytes_read; byte = byte + 1) {
-
-            buffer[byte] = (buffer[byte] + hash[byte]) % 256;
+            sha512(hash, 64, hash);
 
         }
 
-        for (byte = 0; byte < bytes_read; byte = byte + 1) {
+    block = params->thread_id;
+    do {
 
-            temp = buffer[hash[byte] % bytes_read];
-            buffer[hash[byte] % bytes_read] = buffer[byte];
-            buffer[byte] = temp;
+        SetFilePointer(input, block * BUFFER_SIZE, NULL, FILE_BEGIN);
+        SetFilePointer(output, block * BUFFER_SIZE, NULL, FILE_BEGIN);
+
+        ReadFile(input, buffer, BUFFER_SIZE, &bytes_read, NULL);
+
+        for (byte_block = 0; byte_block < (bytes_read / 64) + 1; byte_block = byte_block + 1) {
+
+            buffer_partition = &buffer[byte_block * 64];
+            partition_bytes = byte_block < bytes_read / 64 ?
+                                64 :
+                                bytes_read % 64;
+
+            for (byte = 0; byte < partition_bytes; byte = byte + 1) {
+
+                buffer_partition[byte] = (buffer_partition[byte] + hash[byte]) % 256;
+
+            }
+
+            for (byte = 0; byte < partition_bytes; byte = byte + 1) {
+
+                temp = buffer_partition[hash[byte] % partition_bytes];
+                buffer_partition[hash[byte] % partition_bytes] = buffer_partition[byte];
+                buffer_partition[byte] = temp;
+
+            }
 
         }
 
@@ -107,13 +103,18 @@ DWORD WINAPI right (LPVOID config) {
 
         }
 
-        for (hash_count = 0; hash_count < params->config->threads; hash_count = hash_count + 1) {
+        for (   hash_count = 0;
+                hash_count < params->config->threads * (BUFFER_SIZE / 64);
+                hash_count = hash_count + 1) {
 
             sha512(hash, 64, hash);
 
         }
 
-    }
+
+        block = block + params->config->threads;
+
+    } while (bytes_read > 0);
 
     CloseHandle(input);
     CloseHandle(output);
