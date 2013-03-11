@@ -26,6 +26,8 @@ int main(int argc, char *argv[]) {
 
     HANDLE* thread_handles = NULL;
 
+    DWORD (WINAPI *encrypt)(LPVOID) = &right;
+
     Configuration* config = (Configuration*) malloc(sizeof(Configuration));
     ThreadParameters* params = NULL;
 
@@ -58,7 +60,7 @@ int main(int argc, char *argv[]) {
         if (    strcmp(argv[argument], "-r") == 0 ||
                 strcmp(argv[argument], "--reverse") == 0   ) {
 
-            reveresed = 1;
+            encrypt = &left;
 
         }
 
@@ -105,11 +107,11 @@ int main(int argc, char *argv[]) {
 
             argument = argument + 1;
 
-            buffer_size = MultiByteToWideChar(CP_ACP, NULL, argv[argument], -1, NULL, 0);
+            string_size = MultiByteToWideChar(CP_ACP, NULL, argv[argument], -1, NULL, 0);
 
-            config->input_file_name = (wchar_t*) malloc(sizeof(wchar_t) * buffer_size);
+            config->input_file_name = (wchar_t*) malloc(sizeof(wchar_t) * string_size);
 
-            MultiByteToWideChar(CP_ACP, NULL, argv[argument], -1, config->input_file_name, buffer_size);
+            MultiByteToWideChar(CP_ACP, NULL, argv[argument], -1, config->input_file_name, string_size);
 
         }
 
@@ -118,11 +120,11 @@ int main(int argc, char *argv[]) {
 
             argument = argument + 1;
 
-            buffer_size = MultiByteToWideChar(CP_ACP, NULL, argv[argument], -1, NULL, 0);
+            string_size = MultiByteToWideChar(CP_ACP, NULL, argv[argument], -1, NULL, 0);
 
-            config->output_file_name = (wchar_t*) malloc(sizeof(wchar_t) * buffer_size);
+            config->output_file_name = (wchar_t*) malloc(sizeof(wchar_t) * string_size);
 
-            MultiByteToWideChar(CP_ACP, NULL, argv[argument], -1, config->output_file_name, buffer_size);
+            MultiByteToWideChar(CP_ACP, NULL, argv[argument], -1, config->output_file_name, string_size);
 
         }
 
@@ -193,8 +195,7 @@ int main(int argc, char *argv[]) {
 
         thread_handles[thread - 1] = CreateThread(  NULL,
                                                     0,
-                                                    reveresed == 0 ?
-                                                        right : left,
+                                                    encrypt,
                                                     (void*) params,
                                                     0,
                                                     NULL
@@ -206,15 +207,7 @@ int main(int argc, char *argv[]) {
     params->thread_id = 0;
     params->config = config;
 
-    if (reveresed == 0) {
-
-        right((void*) params);
-
-    } else {
-
-        left((void*) params);
-
-    }
+    encrypt((void*) params);
 
     runtime = clock() - runtime;
 
