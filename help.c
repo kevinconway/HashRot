@@ -19,7 +19,7 @@
 #ifndef HASHROT_PRINT_HELP
 #define HASHROT_PRINT_HELP
 
-#include <stdio.h>
+#include "imports.c"
 
 void print_help() {
 
